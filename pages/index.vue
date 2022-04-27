@@ -1,5 +1,15 @@
 <template>
-  <Tutorial />
+  <b-container fluid class="p-3">
+    <b-row>
+      <b-col>
+        <RecipeBook />
+      </b-col>
+      <b-col>
+        <PantryBlock />
+        <ShoppingCart />
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script>

@@ -4,11 +4,23 @@ export const state = () => ({
 })
 
 export const getters = {
+  getIngredientList: (state, getters, rootState) => (id) => {
+    let ingredient
+    const currentRecipe = state.recipes.find(recipe => recipe.id === id)
+
+    return currentRecipe.recipeIngredients.map((recipeIngredient) => {
+      ingredient = rootState.ingredients.ingredients.find(ingredient => ingredient.id === recipeIngredient.id)
+      if (!ingredient) {
+        return 'Missing Ingredient'
+      }
+      return { id: ingredient.id, name: ingredient.name, quantity: recipeIngredient.quantity }
+    })
+  },
   getRecipeMakeableStatus: (state, getters, rootState) => (id) => {
     let ingredient; let canMake = true
     const currentRecipe = state.recipes.find(recipe => recipe.id === id)
 
-    currentRecipe.recipe_ingredients.forEach((recipeIngredient) => {
+    currentRecipe.recipeIngredients.forEach((recipeIngredient) => {
       ingredient = rootState.ingredients.ingredients.find(ingredient => ingredient.id === recipeIngredient.id)
       if (!ingredient) {
         canMake = false
