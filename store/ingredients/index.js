@@ -50,5 +50,41 @@ export const actions = {
       commit('RESET_STORE')
     }
     commit('setIngredients', [])
+  },
+  async addIngredient ({ dispatch, commit, state, rootState }, { vm, parameters }) {
+    try {
+      await this.$fire.firestore.collection('ingredients').doc().set(parameters, { merge: true })
+    } catch (error) {
+      vm.$bvToast.toast('Database Error\n' + error, {
+        title: 'ERROR',
+        toaster: 'b-toaster-top-center',
+        variant: 'danger',
+        autoHideDelay: 3000
+      })
+    }
+  },
+  async editIngredient ({ dispatch, commit, state, rootState }, { vm, docid, parameters }) {
+    try {
+      await this.$fire.firestore.collection('ingredients').doc(docid).set(parameters, { merge: true })
+    } catch (error) {
+      vm.$bvToast.toast('Database Error\n' + error, {
+        title: 'ERROR',
+        toaster: 'b-toaster-top-center',
+        variant: 'danger',
+        autoHideDelay: 3000
+      })
+    }
+  },
+  async deleteIngredient ({ dispatch, commit, state, rootState }, { vm, ingredientId }) {
+    try {
+      await this.$fire.firestore.collection('ingredients').doc(ingredientId).delete()
+    } catch (error) {
+      vm.$bvToast.toast('Database Error\n' + error, {
+        title: 'ERROR',
+        toaster: 'b-toaster-top-center',
+        variant: 'danger',
+        autoHideDelay: 3000
+      })
+    }
   }
 }

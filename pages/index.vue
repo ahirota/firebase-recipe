@@ -1,12 +1,11 @@
 <template>
   <b-container fluid class="p-3">
     <b-row>
-      <b-col>
+      <!-- <b-col cols="12" class="mb-3">
         <RecipeBook />
-      </b-col>
-      <b-col>
+      </b-col> -->
+      <b-col cols="12">
         <PantryBlock />
-        <ShoppingCart />
       </b-col>
     </b-row>
   </b-container>
