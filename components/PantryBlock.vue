@@ -14,10 +14,25 @@
         <b-tbody>
           <b-tr v-for="ingredient in $store.state.ingredients.ingredients" :key="ingredient.id" :style="checkSearchFilter(ingredient) ? '':'display: none;'">
             <b-td>{{ ingredient.name }}</b-td>
-            <b-td>
+            <b-td v-if="editing.id !== ingredient.id">
               {{ ingredient.quantity }}
             </b-td>
+            <b-td v-else>
+              <b-form-input
+                id="ingredient-quantity"
+                v-model="editing.quantity"
+                type="number"
+                min="0"
+                @keydown.native.enter="handleIngredientUpdate"
+              />
+            </b-td>
             <b-td class="text-right">
+              <b-button v-if="editing.id !== ingredient.id" variant="primary" @click="editIngredientQuantity(ingredient.id)">
+                <b-icon-pencil-square />
+              </b-button>
+              <b-button v-else variant="success" @click="editIngredientQuantity(ingredient.id)">
+                <b-icon-pencil-square />
+              </b-button>
               <b-button variant="danger" @click="openDeleteIngredientModal(ingredient.id)">
                 <b-icon-trash />
               </b-button>
@@ -78,8 +93,12 @@ export default {
         name: '',
         quantity: 0
       },
-      deleteIngredientId: '',
-      items: []
+      editing: {
+        id: '',
+        name: '',
+        quantity: 0
+      },
+      deleteIngredientId: ''
     }
   },
   computed: {
@@ -140,6 +159,31 @@ export default {
       this.newIngredient = {
         name: '',
         quantity: 0
+      }
+    },
+    editIngredientQuantity (ingredientId) {
+      if (this.editing.id && this.editing.id === ingredientId) {
+        this.handleIngredientUpdate()
+      } else {
+        this.editing = JSON.parse(JSON.stringify(this.$store.state.ingredients.ingredients.find(ing => ing.id === ingredientId)))
+      }
+    },
+    async handleIngredientUpdate () {
+      try {
+        const copy = JSON.parse(JSON.stringify(this.editing))
+        await this.$store.dispatch('ingredients/editIngredient', { vm: this, docid: this.editing.id, parameters: copy })
+        this.editing = {
+          id: '',
+          name: '',
+          quantity: 0
+        }
+      } catch (error) {
+        this.$bvToast.toast('Ingredient Update Error\n' + error, {
+          title: 'Error',
+          toaster: 'b-toaster-top-center',
+          variant: 'danger',
+          autoHideDelay: 3000
+        })
       }
     },
     openDeleteIngredientModal (ingredientId) {

@@ -51,9 +51,8 @@
       <form ref="form" @submit.stop.prevent="handleRecipeOk">
         <b-form-group
           id="input-group-1"
-          label=":"
+          label="Recipe Name:"
           label-for="input-1"
-          description="We'll never share your email with anyone else."
         >
           <b-form-input
             id="input-1"
@@ -62,6 +61,56 @@
             placeholder="Enter Recipe Name"
             required
           />
+        </b-form-group>
+        <b-form-group>
+          <b-table-simple bordered hover class="mb-0">
+            <b-thead>
+              <b-tr>
+                <b-th>Ingredient</b-th>
+                <b-th>Quantity</b-th>
+                <b-th />
+              </b-tr>
+            </b-thead>
+            <b-tbody>
+              <b-tr v-for="(item, index) in currentRecipe.ingredients" :key="index">
+                <b-td>
+                  <b-form-select v-model="item.id" required>
+                    <b-form-select-option :value="item.id">
+                      {{ $store.state.ingredients.ingredients.find(ing => ing.id === item.id).name }}
+                    </b-form-select-option>
+                    <b-form-select-option
+                      v-for="ingredient in $store.state.ingredients.ingredients.filter(ing => !currentRecipe.ingredients.map(item => item.id).includes(ing.id))"
+                      :key="ingredient.id"
+                      :value="ingredient.id"
+                    >
+                      {{ ingredient.name }}
+                    </b-form-select-option>
+                  </b-form-select>
+                </b-td>
+                <b-td>
+                  <b-form-input
+                    v-model="item.quantity"
+                    type="number"
+                    min="1"
+                    placeholder="Enter Ingredient Quantity"
+                    required
+                  />
+                </b-td>
+                <b-td class="text-right">
+                  <b-button variant="danger" @click="removeIngredientLine(index)">
+                    <b-icon-trash />
+                  </b-button>
+                </b-td>
+              </b-tr>
+              <b-tr>
+                <b-td colspan="4">
+                  <b-button variant="primary" block @click="addNewIgredientLine()">
+                    <b-icon-plus />
+                  </b-button>
+                </b-td>
+              </b-tr>
+            </b-tbody>
+          </b-table-simple>
         </b-form-group>
       </form>
     </b-modal>
@@ -78,7 +127,7 @@
       @ok="handleRecipeDelete"
     >
       <p>Are you sure you want to delete this recipe?</p>
-      <p>{{deleteRecipeFormat}}</p>
+      <p>{{ deleteRecipeFormat }}</p>
     </b-modal>
   </div>
 </template>
@@ -91,7 +140,7 @@ export default {
       currentRecipe: {
         id: '',
         name: '',
-        ingredients: []
+        ingredients: [{ id: '', quantity: 1 }]
       },
       deleteRecipeId: ''
     }
