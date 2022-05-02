@@ -123,6 +123,18 @@ export default {
         return
       }
 
+      if (this.$store.state.ingredients.ingredients.map(ing => ing.name.toLowerCase()).includes(this.newIngredient.name.toLowerCase())) {
+        this.$bvToast.toast('Ingredient With Name: [' + this.newIngredient.name + '] already exists.', {
+          title: 'ERROR',
+          toaster: 'b-toaster-top-center',
+          variant: 'danger',
+          autoHideDelay: 3000
+        })
+        return
+      }
+
+      this.newIngredient.quantity = parseInt(this.newIngredient.quantity)
+
       const copy = JSON.parse(JSON.stringify(this.newIngredient))
       await this.$store.dispatch('ingredients/addIngredient', { vm: this, parameters: copy })
       this.newIngredient = {
