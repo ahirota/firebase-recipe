@@ -77,15 +77,21 @@ export const actions = {
     }
     commit('setRecipes', [])
   },
-  async submitRecipe ({ dispatch, commit, state, rootState }, { vm, docid, parameters }) {
+  async addRecipe ({ dispatch, commit, state, rootState }, { vm, parameters }) {
     try {
-      let recipeRef
-      if (docid) {
-        recipeRef = this.$fire.firestore.collection('recipes').doc(docid)
-      } else {
-        this.$fire.firestore.collection('recipes').doc()
-      }
-      await recipeRef.set(parameters, { merge: true })
+      await this.$fire.firestore.collection('recipes').doc().set(parameters, { merge: true })
+    } catch (error) {
+      vm.$bvToast.toast('Database Error\n' + error, {
+        title: 'ERROR',
+        toaster: 'b-toaster-top-center',
+        variant: 'danger',
+        autoHideDelay: 3000
+      })
+    }
+  },
+  async editRecipe ({ dispatch, commit, state, rootState }, { vm, docid, parameters }) {
+    try {
+      await this.$fire.firestore.collection('recipes').doc(docid).set(parameters, { merge: true })
     } catch (error) {
       vm.$bvToast.toast('Database Error\n' + error, {
         title: 'ERROR',

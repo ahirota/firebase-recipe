@@ -62,56 +62,6 @@
             required
           />
         </b-form-group>
-        <b-form-group>
-          <b-table-simple bordered hover class="mb-0">
-            <b-thead>
-              <b-tr>
-                <b-th>Ingredient</b-th>
-                <b-th>Quantity</b-th>
-                <b-th />
-              </b-tr>
-            </b-thead>
-            <b-tbody>
-              <b-tr v-for="(item, index) in currentRecipe.ingredients" :key="index">
-                <b-td>
-                  <b-form-select v-model="item.id" required>
-                    <b-form-select-option :value="item.id">
-                      {{ $store.state.ingredients.ingredients.find(ing => ing.id === item.id).name }}
-                    </b-form-select-option>
-                    <b-form-select-option
-                      v-for="ingredient in $store.state.ingredients.ingredients.filter(ing => !currentRecipe.ingredients.map(item => item.id).includes(ing.id))"
-                      :key="ingredient.id"
-                      :value="ingredient.id"
-                    >
-                      {{ ingredient.name }}
-                    </b-form-select-option>
-                  </b-form-select>
-                </b-td>
-                <b-td>
-                  <b-form-input
-                    v-model="item.quantity"
-                    type="number"
-                    min="1"
-                    placeholder="Enter Ingredient Quantity"
-                    required
-                  />
-                </b-td>
-                <b-td class="text-right">
-                  <b-button variant="danger" @click="removeIngredientLine(index)">
-                    <b-icon-trash />
-                  </b-button>
-                </b-td>
-              </b-tr>
-              <b-tr>
-                <b-td colspan="4">
-                  <b-button variant="primary" block @click="addNewIgredientLine()">
-                    <b-icon-plus />
-                  </b-button>
-                </b-td>
-              </b-tr>
-            </b-tbody>
-          </b-table-simple>
-        </b-form-group>
       </form>
     </b-modal>
     <b-modal
@@ -140,7 +90,7 @@ export default {
       currentRecipe: {
         id: '',
         name: '',
-        ingredients: [{ id: '', quantity: 1 }]
+        recipeIngredients: [{ id: '', quantity: 1 }]
       },
       deleteRecipeId: ''
     }
@@ -170,7 +120,15 @@ export default {
       this.setRecipeModalParams(id)
       this.$bvModal.show('submit-recipe-modal')
     },
-    async handleStickySubmit (bvModalEvt) {
+    setRecipeModalParams (id) {
+      if (id !== '') {
+        const recipe = this.$store.state.recipes.recipes.find(recipe => recipe.id === id)
+        this.currentRecipe.id = id
+        this.currentRecipe.name = recipe.name
+        this.currentRecipe.recipeIngredients = recipe.recipeIngredients
+      }
+    },
+    async handleRecipeOk (bvModalEvt) {
       try {
         bvModalEvt.preventDefault()
         if (this.currentRecipe.name === '') {
@@ -183,7 +141,11 @@ export default {
           return
         }
         const copy = JSON.parse(JSON.stringify(this.currentRecipe))
-        await this.$store.dispatch('recipe/submitRecipe', { vm: this, docid: this.currentRecipe.id, parameters: copy })
+        if (this.currentRecipe.id) {
+            await this.$store.dispatch('recipe/editRecipe', { vm: this, docid: this.currentRecipe.id, parameters: copy })
+        } else {
+            await this.$store.dispatch('recipe/addRecipe', { vm: this, parameters: copy })
+        }
         this.$bvModal.hide('submit-recipe-modal')
       } catch (error) {
         this.$bvToast.toast('Create Error\n' + error, {

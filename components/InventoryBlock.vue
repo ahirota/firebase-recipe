@@ -24,17 +24,23 @@
                 type="number"
                 min="0"
                 @keydown.native.enter="handleIngredientUpdate"
+                @keydown.native.esc="resetEditIngredient"
               />
             </b-td>
-            <b-td class="text-right">
-              <b-button v-if="editing.id !== ingredient.id" variant="primary" @click="editIngredientQuantity(ingredient.id)">
+            <b-td v-if="editing.id !== ingredient.id" class="text-right">
+              <b-button v-b-tooltip.hover variant="primary" title="Edit Ingredient" @click="editIngredientQuantity(ingredient.id)">
                 <b-icon-pencil-square />
               </b-button>
-              <b-button v-else variant="success" @click="editIngredientQuantity(ingredient.id)">
-                <b-icon-pencil-square />
-              </b-button>
-              <b-button variant="danger" @click="openDeleteIngredientModal(ingredient.id)">
+              <b-button v-b-tooltip.hover variant="danger" title="Remove Ingredient" @click="openDeleteIngredientModal(ingredient.id)">
                 <b-icon-trash />
+              </b-button>
+            </b-td>
+            <b-td v-else class="text-right">
+              <b-button v-b-tooltip.hover variant="success" title="Update Ingredient" @click="editIngredientQuantity(ingredient.id)">
+                <b-icon-check />
+              </b-button>
+              <b-button v-b-tooltip.hover variant="danger" title="Cancel Ingredient Update" @click="resetEditIngredient">
+                <b-icon-x />
               </b-button>
             </b-td>
           </b-tr>
@@ -58,8 +64,11 @@
               />
             </b-td>
             <b-td class="text-right">
-              <b-button variant="success" @click="createIngredient">
-                <b-icon-upload /> Create
+              <b-button v-b-tooltip.hover variant="success" title="Submit New Ingredient" @click="createIngredient">
+                <b-icon-check />
+              </b-button>
+              <b-button v-b-tooltip.hover variant="danger" title="Reset New Ingredient" @click="resetNewIngredient">
+                <b-icon-x />
               </b-button>
             </b-td>
           </b-tr>
@@ -86,7 +95,7 @@
 
 <script>
 export default {
-  name: 'PantryBlock',
+  name: 'InventoryBlock',
   data () {
     return {
       newIngredient: {
@@ -120,6 +129,12 @@ export default {
       } else {
         return true
       }
+    },
+    resetNewIngredient () {
+      this.newIngredient = { name: '', quantity: 0 }
+    },
+    resetEditIngredient () {
+      this.editing = { id: '', name: '', quantity: 0 }
     },
     async createIngredient () {
       if (!this.newIngredient.name || /^\s*$/.test(this.newIngredient.name)) {

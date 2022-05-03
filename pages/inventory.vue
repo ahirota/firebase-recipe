@@ -2,7 +2,7 @@
   <b-container fluid class="p-3">
     <b-row>
       <b-col>
-        <RecipeBook />
+        <InventoryBlock />
       </b-col>
     </b-row>
   </b-container>
@@ -10,6 +10,6 @@
 
 <script>
 export default {
-  name: 'IndexPage'
+  name: 'InventoryPage'
 }
 </script>
