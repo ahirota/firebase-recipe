@@ -28,7 +28,7 @@
           </b-tr>
           <b-tr>
             <b-td colspan="4">
-              <b-button variant="primary" block @click="openRecipeModal()">
+              <b-button variant="primary" block @click="openRecipeModal('')">
                 New Recipe
               </b-button>
             </b-td>
@@ -37,7 +37,7 @@
       </b-table-simple>
     </b-card>
     <b-modal
-      id="submit-recipe"
+      id="submit-recipe-modal"
       ref="submit-recipe-modal"
       title="Recipe"
       no-close-on-backdrop
@@ -45,7 +45,7 @@
       ok-title="Submit"
       cancel-title="Cancel"
       size="lg"
-      @cancel="handleCreateCancel"
+      @cancel="handleRecipeCancel"
       @ok="handleRecipeOk"
     >
       <form ref="form" @submit.stop.prevent="handleRecipeOk">
@@ -57,10 +57,77 @@
           <b-form-input
             id="input-1"
             v-model="currentRecipe.name"
-            type="input"
             placeholder="Enter Recipe Name"
             required
           />
+        </b-form-group>
+        <b-form-group
+          id="input-group-2"
+          label="Recipe Ingredients:"
+        >
+          <b-table-simple bordered hover class="mb-0">
+            <b-thead>
+              <b-tr>
+                <b-th>Ingredient</b-th>
+                <b-th>Quantity</b-th>
+                <b-th />
+              </b-tr>
+            </b-thead>
+            <b-tbody>
+              <b-tr v-for="ingredient in currentRecipe.recipeIngredients" :key="ingredient.id">
+                <b-td>
+                  <b-form-input
+                    id="ingredient-quantity"
+                    :value="ingredientNameFromId(ingredient.id)"
+                    readonly
+                  />
+                </b-td>
+                <b-td>
+                  <b-form-input
+                    id="ingredient-quantity"
+                    v-model="ingredient.quantity"
+                    type="number"
+                    min="1"
+                  />
+                </b-td>
+                <b-td class="text-right">
+                  <b-button v-b-tooltip.hover variant="danger" title="Cancel Ingredient Update" @click="removeIngredient(ingredient.id)">
+                    <b-icon-trash />
+                  </b-button>
+                </b-td>
+              </b-tr>
+              <b-tr v-if="!allIngredientsUsed">
+                <b-td>
+                  <b-form-select v-model="newIngredient.id">
+                    <b-form-select-option :value="''" disabled>
+                      Please Select An Ingredient
+                    </b-form-select-option>
+                    <b-form-select-option v-for="item in remainingIngredients" :key="item.id" :value="item.id">
+                      {{ item.name }}
+                    </b-form-select-option>
+                  </b-form-select>
+                </b-td>
+                <b-td>
+                  <b-form-input
+                    id="input-2"
+                    v-model="newIngredient.quantity"
+                    type="number"
+                    min="1"
+                    placeholder="Enter Ingredient Quantity"
+                    required
+                  />
+                </b-td>
+                <b-td class="text-right">
+                  <b-button v-b-tooltip.hover variant="success" title="Submit New Ingredient" @click="addIngredient">
+                    <b-icon-check />
+                  </b-button>
+                  <b-button v-b-tooltip.hover variant="danger" title="Reset New Ingredient" @click="resetIngredient">
+                    <b-icon-x />
+                  </b-button>
+                </b-td>
+              </b-tr>
+            </b-tbody>
+          </b-table-simple>
         </b-form-group>
       </form>
     </b-modal>
@@ -90,7 +157,11 @@ export default {
       currentRecipe: {
         id: '',
         name: '',
-        recipeIngredients: [{ id: '', quantity: 1 }]
+        recipeIngredients: []
+      },
+      newIngredient: {
+        id: '',
+        quantity: 1
       },
       deleteRecipeId: ''
     }
@@ -106,6 +177,13 @@ export default {
         }
       }
       return ''
+    },
+    remainingIngredients () {
+      const usedIngredients = this.currentRecipe.recipeIngredients.map(ingredient => ingredient.id)
+      return this.$store.state.ingredients.ingredients.filter(ingredient => !usedIngredients.includes(ingredient.id))
+    },
+    allIngredientsUsed () {
+      return (this.remainingIngredients.length === 0)
     }
   },
   methods: {
@@ -128,15 +206,49 @@ export default {
         this.currentRecipe.recipeIngredients = recipe.recipeIngredients
       }
     },
+    resetCurrentRecipe () {
+      this.currentRecipe = { id: '', name: '', recipeIngredients: [] }
+    },
+    ingredientNameFromId (id) {
+      return this.$store.state.ingredients.ingredients.find(ingredient => ingredient.id === id) ? this.$store.state.ingredients.ingredients.find(ingredient => ingredient.id === id).name : 'Unknown Ingredient'
+    },
+    addIngredient () {
+      if (this.newIngredient.id !== '') {
+        this.currentRecipe.recipeIngredients.push(this.newIngredient)
+        this.resetIngredient()
+      } else {
+        this.$bvToast.toast('Please select an ingredient.', {
+          title: 'Error',
+          toaster: 'b-toaster-top-center',
+          variant: 'warning',
+          autoHideDelay: 1500
+        })
+      }
+    },
+    resetIngredient () {
+      this.newIngredient = { id: '', quantity: 1 }
+    },
+    removeIngredient (id) {
+      this.currentRecipe.recipeIngredients = this.currentRecipe.recipeIngredients.filter(ingredient => ingredient.id !== id)
+    },
     async handleRecipeOk (bvModalEvt) {
       try {
         bvModalEvt.preventDefault()
-        if (this.currentRecipe.name === '') {
-          this.$bvToast.toast('', {
-            title: 'Confirm',
+        if (!this.currentRecipe.name || /^\s*$/.test(this.currentRecipe.name)) {
+          this.$bvToast.toast('Recipe Name Cannot Be Blank', {
+            title: 'ERROR',
             toaster: 'b-toaster-top-center',
-            variant: 'warning',
-            autoHideDelay: 1500
+            variant: 'danger',
+            autoHideDelay: 3000
+          })
+          return
+        }
+        if (this.currentRecipe.recipeIngredients.some(ingredient => ingredient.quantity < 1)) {
+          this.$bvToast.toast('All Ingredients Must Have Quantity Greater Than One', {
+            title: 'ERROR',
+            toaster: 'b-toaster-top-center',
+            variant: 'danger',
+            autoHideDelay: 3000
           })
           return
         }
@@ -146,7 +258,11 @@ export default {
         } else {
           await this.$store.dispatch('recipe/addRecipe', { vm: this, parameters: copy })
         }
-        this.$bvModal.hide('submit-recipe-modal')
+        this.resetCurrentRecipe()
+        this.resetIngredient()
+        this.$nextTick(() => {
+          this.$bvModal.hide('submit-recipe-modal')
+        })
       } catch (error) {
         this.$bvToast.toast('Create Error\n' + error, {
           title: 'Error',
@@ -156,8 +272,10 @@ export default {
         })
       }
     },
-    handleCreateCancel (bvModalEvt) {
+    handleRecipeCancel (bvModalEvt) {
       bvModalEvt.preventDefault()
+      this.resetCurrentRecipe()
+      this.resetIngredient()
       this.$nextTick(() => {
         this.$bvModal.hide('submit-recipe-modal')
       })
