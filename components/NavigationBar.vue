@@ -8,8 +8,8 @@
       <b-nav-item @click="$router.push('/')">
         Recipes
       </b-nav-item>
-      <b-nav-item @click="$router.push('/inventory')">
-        Inventory
+      <b-nav-item @click="$router.push('/ingredients')">
+        Ingredients
       </b-nav-item>
     </b-navbar-nav>
 

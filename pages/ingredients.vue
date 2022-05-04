@@ -10,6 +10,6 @@
 
 <script>
 export default {
-  name: 'InventoryPage'
+  name: 'IngredientPage'
 }
 </script>

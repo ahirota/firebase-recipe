@@ -142,9 +142,9 @@ export default {
         }
         const copy = JSON.parse(JSON.stringify(this.currentRecipe))
         if (this.currentRecipe.id) {
-            await this.$store.dispatch('recipe/editRecipe', { vm: this, docid: this.currentRecipe.id, parameters: copy })
+          await this.$store.dispatch('recipe/editRecipe', { vm: this, docid: this.currentRecipe.id, parameters: copy })
         } else {
-            await this.$store.dispatch('recipe/addRecipe', { vm: this, parameters: copy })
+          await this.$store.dispatch('recipe/addRecipe', { vm: this, parameters: copy })
         }
         this.$bvModal.hide('submit-recipe-modal')
       } catch (error) {

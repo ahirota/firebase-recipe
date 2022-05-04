@@ -13,9 +13,17 @@
         </b-thead>
         <b-tbody>
           <b-tr v-for="ingredient in $store.state.ingredients.ingredients" :key="ingredient.id" :style="checkSearchFilter(ingredient) ? '':'display: none;'">
-            <b-td>{{ ingredient.name }}</b-td>
+            <b-td>
+              <b-form-input
+                v-model="ingredient.name"
+                readonly
+              />
+            </b-td>
             <b-td v-if="editing.id !== ingredient.id">
-              {{ ingredient.quantity }}
+              <b-form-input
+                v-model="ingredient.quantity"
+                readonly
+              />
             </b-td>
             <b-td v-else>
               <b-form-input
