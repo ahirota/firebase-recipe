@@ -30,6 +30,22 @@ export const getters = {
     })
 
     return canMake
+  },
+  getRemainingIngredients: (state, getters, rootState) => (id) => {
+    let ingredient
+    const remaining = []
+    const currentRecipe = state.recipes.find(recipe => recipe.id === id)
+
+    currentRecipe.recipeIngredients.forEach((recipeIngredient) => {
+      ingredient = rootState.ingredients.ingredients.find(ingredient => ingredient.id === recipeIngredient.id)
+      if (!ingredient) {
+        remaining.push(recipeIngredient.quantity + ' of an unknown ingredient')
+      } else if (recipeIngredient.quantity > ingredient.quantity) {
+        remaining.push((recipeIngredient.quantity - ingredient.quantity) + ' ' + ingredient.name)
+      }
+    })
+
+    return 'You still need: ' + remaining.join(', ')
   }
 }
 

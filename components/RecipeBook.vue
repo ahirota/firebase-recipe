@@ -12,10 +12,17 @@
         </b-thead>
         <b-tbody>
           <b-tr v-for="recipe in $store.state.recipes.recipes" :key="recipe.id" :style="checkSearchFilter(recipe) ? '':'display: none;'">
-            <b-td><p>{{ recipe.name }}</p></b-td>
-            <b-td>{{ $store.getters['recipes/getIngredientList'](recipe.id).map(obj => obj.name + ': ' + obj.quantity).join('\n') }}</b-td>
+            <b-td>{{ recipe.name }}</b-td>
             <b-td>
-              {{ $store.getters['recipes/getRecipeMakeableStatus'](recipe.id) ? 'Yes' : 'No' }}
+              <ul class="mb-0">
+                <li v-for="ingredient in $store.getters['recipes/getIngredientList'](recipe.id).map(obj => obj.name + ': ' + obj.quantity)" :key="ingredient">
+                  {{ ingredient }}
+                </li>
+              </ul>
+            </b-td>
+            <b-td>
+              <p class="mb-0">{{ $store.getters['recipes/getRecipeMakeableStatus'](recipe.id) ? 'Yes' : 'No' }}</p>
+              <p class="mb-0">{{ getRemainingIngredients(recipe.id) }}</p>
             </b-td>
             <b-td class="text-right">
               <b-button variant="primary" @click="openRecipeModal(recipe.id)">
@@ -194,6 +201,11 @@ export default {
         return true
       }
     },
+    getRemainingIngredients (id) {
+      if (!this.$store.getters['recipes/getRecipeMakeableStatus'](id)) {
+        return this.$store.getters['recipes/getRemainingIngredients'](id)
+      }
+    },
     openRecipeModal (id = '') {
       this.setRecipeModalParams(id)
       this.$bvModal.show('submit-recipe-modal')
@@ -254,9 +266,9 @@ export default {
         }
         const copy = JSON.parse(JSON.stringify(this.currentRecipe))
         if (this.currentRecipe.id) {
-          await this.$store.dispatch('recipe/editRecipe', { vm: this, docid: this.currentRecipe.id, parameters: copy })
+          await this.$store.dispatch('recipes/editRecipe', { vm: this, docid: this.currentRecipe.id, parameters: copy })
         } else {
-          await this.$store.dispatch('recipe/addRecipe', { vm: this, parameters: copy })
+          await this.$store.dispatch('recipes/addRecipe', { vm: this, parameters: copy })
         }
         this.resetCurrentRecipe()
         this.resetIngredient()
