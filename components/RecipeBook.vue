@@ -21,8 +21,12 @@
               </ul>
             </b-td>
             <b-td>
-              <p class="mb-0">{{ $store.getters['recipes/getRecipeMakeableStatus'](recipe.id) ? 'Yes' : 'No' }}</p>
-              <p class="mb-0">{{ getRemainingIngredients(recipe.id) }}</p>
+              <p class="mb-0">
+                {{ $store.getters['recipes/getRecipeMakeableStatus'](recipe.id) ? 'Yes' : 'No' }}
+              </p>
+              <p class="mb-0">
+                {{ getRemainingIngredients(recipe.id) }}
+              </p>
             </b-td>
             <b-td class="text-right">
               <b-button variant="primary" @click="openRecipeModal(recipe.id)">
